@@ -19,7 +19,7 @@ function PacienteRead(){ //esse componente é responsável pela página inicial,
             setPacienteList(response.data); //seta o state PacienteList
             setLista(response.data) //seta o state lista (necessário por haver a possibilidade de filtrar pacientes)
         }).catch(function (error) {
-            console.log(error);
+            Swal.fire({icon: 'error', title: 'Não foi possível carregar os pacientes'});
         })
     }
 
@@ -55,7 +55,7 @@ function PacienteRead(){ //esse componente é responsável pela página inicial,
     }
 
     const handleChangeStatus = (id) => { //é executado quando o usuário clica em alterar o status de um paciente
-        axios.get('/api/changeStatus/'+id).then(function (response){ //o estado é alterado via api get passando o id do paciente
+        axios.post('/api/changeStatus/'+id).then(function (response){ //o estado é alterado via api get passando o id do paciente
             document.location.reload(true);
         }).catch(function (error){
             Swal.fire({
@@ -68,31 +68,11 @@ function PacienteRead(){ //esse componente é responsável pela página inicial,
     }
 
     const handleSearch = () => { //é executado quando o usuário pressiona o botão de pesquisar pelo nome do paciente
-        NodeList.prototype.forEach = Array.prototype.forEach //apenas para tratar o NodeList (linhas da tabela) usando o forEach
-        const childs = document.getElementById("tbody").childNodes; //pega a lista de nós filhos de tbody
-        childs.forEach(function(item){ //torna display = none todas as linhas da tabela
-            item.display = 'none'
-        });
-        let formData =  new FormData()
-        formData.append('input', document.getElementById('search').value) //seta o dado input com o valor do campo de pesquisa
-        axios.post('/api/searchName/', formData).then(function (response){ //faz uma requisição via post para a api para buscar pacientes com o nome digitado
-            let pacienteSearch = response.data;
-            pacienteSearch = pacienteSearch[0]; //a variável pacienteSearch recebe o primeiro (e único) registro do array pacienteSearch retornado pela api (array dentro de array)
-            //seta os states de acordo com o resultado da api
-            setPacienteSearch(pacienteSearch);
-            setLista(pacienteSearch);
-
-        }).catch(function (error){
-            Swal.fire({
-                icon: 'error',
-                title: 'Ocorreu um erro interno!',
-                showConfirmButton: false,
-                timer: 1500
-            })
-            console.log(error)
-        })
-        setPacienteSearch([])
-        setLista(pacienteSearch) //nesse momento a lista de pacientes (que aparece na tabela) é considerada como a retornado pela pesquisa, e não mais por todos os pacientes
+        const formData = new FormData();
+        formData.append('input', document.getElementById('search').value);
+        axios.post('/api/searchName/', formData).then(response => {
+            setLista(response.data);
+        }).catch(() => Swal.fire({icon: 'error', title: 'Não foi possível pesquisar'}));
     }
 
     return ( //retorna o componente
@@ -125,7 +105,6 @@ function PacienteRead(){ //esse componente é responsável pela página inicial,
                             <tbody id="tbody">
                                 {
                                     lista.map((paciente, key) => { {/* mapeia todo o state lista considerando cada paciente */}
-                                        paciente.status = paciente.status ? "Ativo" : "Inativo"; {/* considera o valor booleano do state status para usar o string "Ativo" ou "Inativo" */}
                                         return(
                                             <tr key={key}>
                                                 <td>{paciente.nome}</td>
@@ -134,7 +113,7 @@ function PacienteRead(){ //esse componente é responsável pela página inicial,
                                                 <td>{paciente.sexo}</td>
                                                 <td>{paciente.endereco}</td>
                                                 <td>
-                                                    <span className='mx-1'>{paciente.status}</span>
+                                                    <span className='mx-1'>{paciente.status ? "Ativo" : "Inativo"}</span>
                                                     <button onClick={() => handleChangeStatus(paciente.id)} className="btn btn-outline-primary mx-1">
                                                         Alterar
                                                     </button>

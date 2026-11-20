@@ -1,0 +1,38 @@
+services:
+  db:
+    image: mysql:8.4@sha256:a81d043930e51745522bd5c430961cf8286f0a23f0a9a2a6e0108f7ea71b0902
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-acme}
+      MYSQL_USER: ${DB_USER:-acme}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Run scripts/configure}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?Run scripts/configure}
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: [CMD-SHELL, 'MYSQL_PWD="$${MYSQL_PASSWORD}" mysql --protocol=TCP -h 127.0.0.1 -u "$${MYSQL_USER}" "$${MYSQL_DATABASE}" -e "SELECT 1" >/dev/null 2>&1']
+      interval: 3s
+      timeout: 3s
+      retries: 40
+      start_period: 20s
+  app:
+    build:
+      context: .
+      target: app
+    environment:
+      APP_ENV: prod
+      APP_DEBUG: '0'
+      APP_SECRET: ${APP_SECRET:?Run scripts/configure}
+      DATABASE_URL: mysql://${DB_USER:-acme}:${DB_PASSWORD}@db:3306/${DB_NAME:-acme}?serverVersion=8.4.0&charset=utf8mb4
+      MESSENGER_TRANSPORT_DSN: doctrine://default?auto_setup=0
+      MAILER_DSN: null://null
+    ports:
+      - '127.0.0.1:${APP_PORT:-8080}:8080'
+    depends_on:
+      db:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+volumes:
+  db-data:

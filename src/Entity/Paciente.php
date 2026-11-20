@@ -7,6 +7,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: PacienteRepository::class)]
+#[ORM\UniqueConstraint(name: 'UNIQ_CPF', columns: ['cpf'])]
 class Paciente //classe do paciente gerada via symfony flex
 {
     //declaração de atributos com suas propriedades
@@ -18,7 +19,7 @@ class Paciente //classe do paciente gerada via symfony flex
     #[ORM\Column(length: 100)]
     private ?string $Nome = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[ORM\Column(type: Types::DATE_IMMUTABLE)]
     private ?\DateTimeInterface $DataNascimento = null;
 
     #[ORM\Column(length: 11)]

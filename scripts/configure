@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")/.."
+if [[ -e .env.local ]]; then echo '.env.local já existe; preservado.'; exit 0; fi
+# MySQL only applies its initial passwords when the data volume is empty.
+command -v docker >/dev/null || { echo 'Docker é necessário; instale/inicie antes de configurar.' >&2; exit 1; }
+volumes=$(docker volume ls --format '{{.Name}}') || {
+    echo 'Não foi possível verificar os volumes Docker. Verifique o serviço e as permissões antes de configurar.' >&2
+    exit 1
+}
+if [[ $'\n'"$volumes"$'\n' == *$'\nacme-local_db-data\n'* ]]; then
+    echo 'O volume acme-local_db-data já existe, mas .env.local está ausente.' >&2
+    echo 'Restaure o .env.local original ou recupere as credenciais do banco existente. Novas senhas não alteram esse volume; nenhum dado foi apagado.' >&2
+    exit 1
+fi
+command -v openssl >/dev/null || { echo 'Instale openssl para gerar credenciais locais.' >&2; exit 1; }
+umask 077
+set -o noclobber
+{
+    echo 'APP_PORT=8080'
+    echo "APP_SECRET=$(openssl rand -hex 32)"
+    echo 'DB_NAME=acme'
+    echo 'DB_USER=acme'
+    echo "DB_PASSWORD=$(openssl rand -hex 24)"
+    echo "DB_ROOT_PASSWORD=$(openssl rand -hex 24)"
+} > .env.local
+echo '.env.local criado (somente demonstração local).'

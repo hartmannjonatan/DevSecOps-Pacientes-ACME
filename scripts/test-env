@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")/.."
+# Fixed independent project and volume; never accepts a production project name.
+dc() { docker compose --env-file tests/compose.env -p acme-test "$@"; }
+case "${1:-}" in
+    build) dc build ;;
+    up) dc up -d --wait --wait-timeout 180 ;;
+    wait) dc up -d --wait --wait-timeout 180 ;;
+    migrate) dc exec -T app php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration ;;
+    test) dc exec -T app php tests/functional.php ;;
+    seed)
+        mkdir -p artifacts
+        dc exec -T app php tests/functional.php seed > artifacts/dast-fixtures.json
+        dc exec -T app php tests/openapi-fixtures.php < artifacts/dast-fixtures.json > artifacts/openapi-seeded.json
+        cat artifacts/dast-fixtures.json ;;
+    persistence)
+        dc exec -T app php tests/functional.php persistence-create
+        dc stop
+        dc up -d --wait --wait-timeout 180
+        dc exec -T app php tests/functional.php persistence-verify ;;
+    logs) dc logs --no-color --timestamps ;;
+    stop) dc stop ;;
+    clean) dc down --volumes --remove-orphans ;;
+    all)
+        trap 'rc=$?; if ((rc)); then mkdir -p artifacts; dc logs --no-color --timestamps > artifacts/test-failure.log 2>&1 || true; fi; exit "$rc"' EXIT
+        "$0" build
+        "$0" up
+        "$0" test
+        "$0" persistence ;;
+    *) echo 'Uso: scripts/test-env {build|up|wait|migrate|test|seed|persistence|logs|stop|clean|all}' >&2; exit 2 ;;
+esac

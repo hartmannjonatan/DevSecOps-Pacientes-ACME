@@ -2,177 +2,128 @@
 
 namespace App\Controller;
 
+use App\Entity\Paciente;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
-use App\Entity\Paciente;
-use Doctrine\Persistence\ManagerRegistry;
-use Symfony\Config\Doctrine;
+use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/api', name: 'api_')] //esse controller é responsável por todas as rotas da api (começando com /api)
+#[Route('/api', name: 'api_')]
 class IndexController extends AbstractController
 {
-    #[Route('/', name: 'list', methods: ['GET'])] //a rota padrão "/api/ via get retorna um array contendo todos os dados de todos os pacientes registrados
-    public function index(ManagerRegistry $doctrine): JsonResponse
+    private function data(Paciente $p): array
     {
-        $pacientes = $doctrine->getRepository(Paciente::class)->findAll(); //utiliza-se o método padrão findAll do próprio repositório gerado pelo Symfony
-
-        $data = [];
-
-        foreach($pacientes as $paciente){ //armazena no array data os dados de cada paciente
-            $data[] = [
-                'id' => $paciente->getId(),
-                'nome' => $paciente->getNome(),
-                'dataNasc' => $paciente->getDataNascimento(),
-                'cpf' => $paciente->getCPF(),
-                'sexo' => $paciente->getSexo(),
-                'endereco' => $paciente->getEndereco(),
-                'status' => $paciente->isStatus()
-            ];
-        }
-
-        return $this->json($data); //retorna o json com os dados
+        return ['id' => $p->getId(), 'nome' => $p->getNome(),
+            'dataNasc' => $p->getDataNascimento()->format('Y-m-d'),
+            'cpf' => $p->getCPF(), 'sexo' => $p->getSexo(),
+            'endereco' => $p->getEndereco(), 'status' => $p->isStatus()];
     }
 
-    #[Route('/create', methods: ['POST'], name: 'create')] //a rota via post /create é responsável por persistir um novo paciente no BD
-    public function create(Request $request, ManagerRegistry $doctrine): JsonResponse
+    private function missing(): JsonResponse
     {
-        $entityManager = $doctrine->getManager();
-        $paciente = new Paciente(); //instancia um novo paciente
-        //seta os dados do objeto paciente de acordo com o enviado pela requisição
-        $paciente->setNome($request->request->get('nome'));
-        $paciente->setDataNascimento(date_create($request->request->get('dataNasc'))); //a data de nascimento é criada com o date_create() do php
-        $paciente->setCPF($request->request->get('cpf'));
-        $paciente->setSexo($request->request->get('sexo'));
-        $paciente->setEndereco($request->request->get('endereco'));
-
-        $entityManager->persist($paciente); //persiste no BD
-        $entityManager->flush();
-
-        return $this->json('Paciente cadastrado com sucesso. ID: '.$paciente->getId()); //retorna o sucesso com json
+        return $this->json(['error' => 'Paciente não encontrado.'], 404);
     }
 
-        #[Route('/edit/{id}', methods: ['POST'], name: 'edit')] //rota via post /edit/{id} atualiza um registro de um paciente com base em seu ID
-    public function edit(Request $request, ManagerRegistry $doctrine, int $id): JsonResponse
+    #[Route('/', name: 'list', methods: ['GET'])]
+    public function index(EntityManagerInterface $em): JsonResponse
     {
-        $entityManager = $doctrine->getManager();
-        $paciente = $entityManager->getRepository(Paciente::class)->find($id); //encontra o paciente usando o método padrão find
-
-        if(!$paciente){ //se não há paciente cadastrado com aquele id é retornado erro 404
-            return $this->json('Nenhum paciente com o ID '.$id.' foi encontrado.', 404);
-        }
-        
-        //dados do paciente são atualizados de acordo com o que é recebido pela requisição
-        $paciente->setNome($request->request->get('nome'));
-        $paciente->setDataNascimento(date_create($request->request->get('dataNasc')));
-        $paciente->setCPF($request->request->get('cpf'));
-        $paciente->setSexo($request->request->get('sexo'));
-        $paciente->setEndereco($request->request->get('endereco'));
-
-        
-        $entityManager->flush(); //atualização é enviada ao BD
-
-        $data = [
-            'id' => $paciente->getId(),
-            'nome' => $paciente->getNome(),
-            'dataNasc' => $paciente->getDataNascimento(),
-            'cpf' => $paciente->getCPF(),
-            'sexo' => $paciente->getSexo(),
-            'endereco' => $paciente->getEndereco()
-        ];
-
-        return $this->json($data); //retorna o json do paciente atualizado
+        return $this->json(array_map($this->data(...), $em->getRepository(Paciente::class)->findBy([], ['id' => 'ASC'])));
     }
 
-    #[Route('/delete/{id}', methods: ['DELETE'], name: 'delete')] //rota via DELETE exclui um paciente com base em seu ID
-    public function delete(Request $request, ManagerRegistry $doctrine, int $id): JsonResponse
+    // Forms are the public contract used by React; JSON is deliberately rejected.
+    private function save(Request $request, EntityManagerInterface $em, Paciente $p, bool $create): JsonResponse
     {
-        $entityManager = $doctrine->getManager();
-        $paciente = $entityManager->getRepository(Paciente::class)->find($id); //encontra o paciente usando o método padrõa find e o id enviado
-
-        if(!$paciente){ //se paciente com esse id não existe no BD, é retornado um erro 404
-            return $this->json('Nenhum paciente com o ID '.$id.' foi encontrado.', 404);
+        if (!in_array($request->getContentTypeFormat(), ['form'], true)) {
+            return $this->json(['error' => 'Envie campos de formulário (urlencoded ou multipart).'], 415);
         }
-
-        $entityManager->remove($paciente); //paciente é removido do BD
-        $entityManager->flush();
-
-        return $this->json('Paciente com ID '.$id.' foi deletado com sucesso'); //retorna json com sucesso
+        $fields = $request->request->all();
+        $errors = [];
+        foreach (['nome' => 100, 'cpf' => 11, 'sexo' => 10, 'dataNasc' => 10, 'endereco' => 255] as $field => $max) {
+            $value = $fields[$field] ?? '';
+            if (!is_string($value) || mb_strlen(trim($value)) > $max || ($field !== 'endereco' && trim($value) === '')) {
+                $errors[$field] = 'Campo obrigatório ou tamanho/formato inválido.';
+            } else {
+                $fields[$field] = trim($value);
+            }
+        }
+        if ($errors) return $this->json(['errors' => $errors], 422);
+        $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $fields['dataNasc']);
+        if (!$date || $date->format('Y-m-d') !== $fields['dataNasc'] || $date < new \DateTime('1000-01-01') || $date > new \DateTime('today')) {
+            $errors['dataNasc'] = 'Use uma data entre 1000-01-01 e hoje, no formato AAAA-MM-DD.';
+        }
+        if (!preg_match('/^[0-9]{11}$/D', $fields['cpf'])) $errors['cpf'] = 'Use 11 dígitos.';
+        if (!in_array($fields['sexo'], ['Masculino', 'Feminino', 'Outro'], true)) $errors['sexo'] = 'Valor inválido.';
+        if ($errors) return $this->json(['errors' => $errors], 422);
+        $existing = $em->getRepository(Paciente::class)->findOneBy(['CPF' => $fields['cpf']]);
+        if ($existing && $existing->getId() !== $p->getId()) return $this->json(['error' => 'CPF já cadastrado.'], 409);
+        $p->setNome($fields['nome'])->setCPF($fields['cpf'])->setSexo($fields['sexo'])
+            ->setDataNascimento($date)->setEndereco($fields['endereco'] ?: null);
+        try {
+            $em->persist($p);
+            $em->flush();
+        } catch (UniqueConstraintViolationException) {
+            return $this->json(['error' => 'CPF já cadastrado.'], 409);
+        }
+        return $this->json($this->data($p), $create ? 201 : 200);
     }
 
-    #[Route('/validyCPF/{cpf}', methods: ['GET'], name: 'validyCPF')] //rota via get que valida um cpf
-    public function validyCPF(Request $request, ManagerRegistry $doctrine, string $cpf): JsonResponse
+    #[Route('/create', name: 'create', methods: ['POST'])]
+    public function create(Request $request, EntityManagerInterface $em): JsonResponse
     {
-        $entityManager = $doctrine->getManager();
-        $paciente = $entityManager->getRepository(Paciente::class)->findCPF($cpf); //usa o método findCPF (criado) para encontrar algum paciente com aquele cpf
-
-        if(!$paciente){
-            return $this->json(true); //se não houver um paciente cadastrado com aquele cpf, é retornado true
-        } else{
-            return $this->json(false); //se não, é retornado false
-        }
+        return $this->save($request, $em, new Paciente(), true);
     }
 
-    #[Route('/show/{id}', methods: ['GET'], name: 'show')] //rota via get que retorna todos os dados de um único paciente com base em seu id
-    public function show(Request $request, ManagerRegistry $doctrine, string $id): JsonResponse
+    #[Route('/edit/{id}', name: 'edit', requirements: ['id' => '\d+'], methods: ['POST'])]
+    public function edit(Request $request, EntityManagerInterface $em, int $id): JsonResponse
     {
-        $entityManager = $doctrine->getManager();
-        $paciente = $entityManager->getRepository(Paciente::class)->find($id); //paciente é encontrado utilizando o método padrão find
-
-        if(!$paciente){ //se o paciente não for encontrado, um erro 404 é retornado
-            return $this->json("Nenhum paciente encontrado com este id", 404);
-        } else{
-            $data = [
-                'id' => $paciente->getId(),
-                'nome' => $paciente->getNome(),
-                'dataNasc' => $paciente->getDataNascimento(),
-                'cpf' => $paciente->getCPF(),
-                'sexo' => $paciente->getSexo(),
-                'endereco' => $paciente->getEndereco(),
-                'status' => $paciente->isStatus()
-            ];
-            return $this->json($data); //retorna os dados do paciente em json
-        }
+        $p = $em->find(Paciente::class, $id);
+        return $p ? $this->save($request, $em, $p, false) : $this->missing();
     }
 
-    #[Route('/changeStatus/{id}', methods: ['GET'], name: 'changeStatus')] //rota via get responsável por alterar o status de um paciente utilizando seu id
-    public function changeStatus(Request $request, ManagerRegistry $doctrine, int $id): JsonResponse
+    #[Route('/show/{id}', name: 'show', requirements: ['id' => '\d+'], methods: ['GET'])]
+    public function show(EntityManagerInterface $em, int $id): JsonResponse
     {
-        $entityManager = $doctrine->getManager();
-        $paciente = $entityManager->getRepository(Paciente::class)->find($id); //paciente é encontrado
-
-        if(!$paciente){
-            return $this->json('Nenhum paciente com o ID '.$id.' foi encontrado.', 404); //retorna erro 404 se não encontrar paciente
-        }
-        
-        $paciente->setStatus(!$paciente->isStatus());//o status do paciente é setado como o valor oposto ao antigo valor
-
-        $entityManager->flush();
-
-        $data = [
-            'id' => $paciente->getId(),
-            'nome' => $paciente->getNome(),
-            'dataNasc' => $paciente->getDataNascimento(),
-            'cpf' => $paciente->getCPF(),
-            'sexo' => $paciente->getSexo(),
-            'endereco' => $paciente->getEndereco()
-        ];
-
-        return $this->json($data); // é retornado os dados deste paciente
+        $p = $em->find(Paciente::class, $id);
+        return $p ? $this->json($this->data($p)) : $this->missing();
     }
 
-    #[Route('/searchName/', methods: ['POST'], name: 'searchName')] //rota via post que procura um paciente pelo seu nome no banco de dados
-    public function searchName(Request $request, ManagerRegistry $doctrine): JsonResponse
+    #[Route('/delete/{id}', name: 'delete', requirements: ['id' => '\d+'], methods: ['DELETE'])]
+    public function delete(EntityManagerInterface $em, int $id): JsonResponse
     {
-        $entityManager = $doctrine->getManager();
-        $pacientes = $entityManager->getRepository(Paciente::class)->findByNome($request->request->get('input')); //utiliza o método findByNome (criado) utilizando como parâmetro o input recebido pela requisição
+        $p = $em->find(Paciente::class, $id);
+        if (!$p) return $this->missing();
+        $em->remove($p);
+        $em->flush();
+        return $this->json(['message' => 'Paciente excluído.']);
+    }
 
-        if(!$pacientes){
-            return $this->json(null); //se não houver pacientes é retornado null
-        }
+    #[Route('/changeStatus/{id}', name: 'changeStatus', requirements: ['id' => '\d+'], methods: ['POST'])]
+    public function changeStatus(EntityManagerInterface $em, int $id): JsonResponse
+    {
+        $p = $em->find(Paciente::class, $id);
+        if (!$p) return $this->missing();
+        $p->setStatus(!$p->isStatus());
+        $em->flush();
+        return $this->json($this->data($p));
+    }
 
-        return $this->json($pacientes); //se houver pacientes é retornado os seus dados em json
+    #[Route('/validyCPF/{cpf}', name: 'validyCPF', methods: ['GET'])]
+    public function validyCPF(EntityManagerInterface $em, string $cpf): JsonResponse
+    {
+        if (!preg_match('/^[0-9]{11}$/D', $cpf)) return $this->json(['error' => 'Use 11 dígitos.'], 422);
+        // Availability only; does not validate Brazilian CPF check digits.
+        return $this->json(!$em->getRepository(Paciente::class)->findOneBy(['CPF' => $cpf]));
+    }
+
+    #[Route('/searchName/', name: 'searchName', methods: ['POST'])]
+    public function searchName(Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        if ($request->getContentTypeFormat() !== 'form') return $this->json(['error' => 'Envie campos de formulário.'], 415);
+        $input = $request->request->all()['input'] ?? null;
+        if (!is_string($input) || mb_strlen($input) > 100) return $this->json(['errors' => ['input' => 'Informe até 100 caracteres.']], 422);
+        $patients = $em->getRepository(Paciente::class)->findByNome(trim($input));
+        return $this->json(array_map($this->data(...), $patients));
     }
 }

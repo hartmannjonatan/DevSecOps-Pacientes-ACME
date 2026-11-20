@@ -2,15 +2,15 @@
 
 // any CSS you import will output into a single css file (app.css in this case)
 import './styles/app.css';
-import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
-import '../node_modules/jquery/dist/jquery'
-import '../node_modules/bootstrap/dist/js/bootstrap.bundle'
+import 'bootstrap/dist/css/bootstrap.min.css';
+
+import 'bootstrap/dist/js/bootstrap.bundle'
 
 
 // start the Stimulus application
 import './bootstrap';
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PacienteRead from './pages/PacienteRead'
 import PacienteCreate from './pages/PacienteCreate'
@@ -27,5 +27,5 @@ const main = (
     </Router>
 )
 
-ReactDOM.render(main, document.getElementById('app')); //renderiza o componente main dentro da div "app" do html padrão
+createRoot(document.getElementById('app')).render(main); //renderiza o componente main dentro da div "app" do html padrão
 

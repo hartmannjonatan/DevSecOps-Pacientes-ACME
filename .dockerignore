@@ -1,0 +1,12 @@
+.git
+.agents
+.codex
+.env.local
+.env.*.local
+node_modules
+vendor
+var
+public/build
+public/bundles
+artifacts
+*.log
