@@ -1,6 +1,6 @@
-# Política de segurança — versão 3
+# Política de segurança — versão 4
 
-Escopo: demonstração acadêmica Pacientes ACME, com dados fictícios, executada localmente e no CI. Objetivo: decidir a aprovação com evidências válidas, mantendo resultados de segurança separados de erros de execução. Esta versão aplica **Secret Detection, SCA e SAST**; IaC e DAST ainda não estão implementados e não são declarados aprovados.
+Escopo: demonstração acadêmica Pacientes ACME, com dados fictícios, executada localmente e no CI. Objetivo: decidir a aprovação com evidências válidas, mantendo resultados de segurança separados de erros de execução. Esta versão aplica **Secret Detection, SCA, SAST e IaC**; DAST ainda não está implementado e não é declarado aprovado.
 
 ## Decisão de Secret Detection e composição do gate
 
@@ -13,7 +13,7 @@ Escopo: demonstração acadêmica Pacientes ACME, com dados fictícios, executad
 
 Gitleaks não oferece uma classificação uniforme de severidade para todos os segredos. Uma credencial detectada e ainda não avaliada é potencialmente utilizável: **todo achado não excepcionado bloqueia**, inclusive no histórico. O tratamento depende do contexto; não se presume que um token seja inofensivo porque está antigo ou não aparece mais no arquivo atual.
 
-`Security gate` exige sucesso dos jobs `Secret Detection`, **ambas as entradas da matriz SCA (Composer/npm)**, `SAST (PHP and React)` e `Security policy tests`, executa mesmo se outro job falhar e reprova também para `failure`, `cancelled` ou `skipped`. A matriz não cancela o outro ecossistema quando um falha. Não há `continue-on-error`, baseline automática, `|| true` para aprovar o scanner nem exceção de falha operacional. A coleta de artefatos pode ocorrer depois da falha e não transforma o job em sucesso. Falha de upload também impede aprovação.
+`Security gate` exige sucesso dos jobs `Secret Detection`, **ambas as entradas da matriz SCA (Composer/npm)**, `SAST (PHP and React)`, `IaC (Dockerfile)` e `Security policy tests`, executa mesmo se outro job falhar e reprova também para `failure`, `cancelled` ou `skipped`. A matriz não cancela o outro ecossistema quando um falha. Não há `continue-on-error`, baseline automática, `|| true` para aprovar o scanner nem exceção de falha operacional. A coleta de artefatos pode ocorrer depois da falha e não transforma o job em sucesso. Falha de upload também impede aprovação.
 
 ## Exceções de Secret Detection
 
@@ -60,11 +60,31 @@ A confiança é a estimativa da regra, não comprovação automática de explora
 
 Saídas do integrador: 0 = análise válida sem bloqueantes (pode haver `review`), 1 = violação, 2 = erro operacional. O scanner nativo pode retornar 1 por um alerta de revisão e o integrador retornar 0: isso aplica a política explícita e não mascara uma falha de execução. A validade do JSON, cobertura e coerência com o retorno nativo são verificadas antes dessa decisão.
 
+## Política IaC
+
+Configuração executável: `security/iac-policy.json`; scanner Checkov 3.4.6 com regras nativas incluídas na imagem fixada, mais três regras locais em `security/checkov/`. Alvo de segurança: o Dockerfile completo. `compose.yaml` é usado somente para confirmar `app.build.context: .`, Dockerfile e target `app` final; não é apresentado como cobertura de todas as configurações Compose.
+
+A execução offline não fornece severidades oficiais de plataforma. A decisão é **por ID e contexto**, sem inventar classificações do fornecedor:
+
+| Regra/condição | Decisão e motivo |
+|---|---|
+| `CKV_DOCKER_1,2,3,5,7,8,10,11` | Bloqueia: exposição SSH, ausência de usuário/healthcheck, uso de root, atualização separada da instalação, tag latest/ausente, diretório relativo ou aliases conflitantes são incompatíveis com a política desta aplicação. |
+| `CKV2_DOCKER_1` a `CKV2_DOCKER_17` | Bloqueia práticas de build como sudo, desativação TLS/assinaturas e uso de chpasswd. Inspecionar a regra específica no relatório, sem confundir essas práticas com um CVE confirmado. |
+| `CKV_DOCKER_4,6,9` | `review`: ADD, MAINTAINER e uso de apt exigem avaliação, mas não comprovam exploração isoladamente; os alertas permanecem visíveis. |
+| `CKV_ACME_DOCKER_1` | Bloqueia se o estágio final app não declarar usuário não root explicitamente; considera UID 0 e não confunde USER do build com runtime. |
+| `CKV_ACME_DOCKER_2` | Bloqueia healthcheck ausente/desativado no estágio final; presença de HEALTHCHECK NONE não basta. |
+| `CKV_ACME_DOCKER_3` | Bloqueia imagem externa sem SHA256 em FROM ou COPY --from; aliases de estágios locais são permitidos. |
+| Regra desconhecida com achado | Bloqueia até revisão. |
+| Scanner/alvo indisponível, relatório incoerente, parsing incompleto, supressões, regras obrigatórias ausentes ou divergência no alvo Compose | Falha operacional, bloqueia; nunca tratar como zero falhas. |
+
+O uso de root durante instalações e configuração no build não equivale à execução HTTP como root. A política requer não root explicitamente no estágio final `app`; não exige USER nem HEALTHCHECK em todos os estágios intermediários. USER herdado de imagem externa, mesmo potencialmente seguro, não satisfaz a declaração explícita exigida aqui. TLS/assinaturas e digests continuam verificados no build. O digest garante identidade da imagem, não ausência de vulnerabilidades.
+
+Saídas do integrador: 0 = válido sem bloqueantes, 1 = violação, 2 = falha operacional. Registros de aprovação/falha podem se repetir por instrução: quantidade de avaliações não é quantidade de regras distintas. Não há exceção IaC, `soft-fail`, baseline ou supressão local permitida. Adicionar uma exceção requer implementar escopo/revisão/testes; o registro atual deve permanecer vazio.
+
 ## Evolução para as outras categorias
 
 As decisões abaixo orientam as próximas etapas; seus controles ainda serão implementados e demonstrados:
 
-- IaC: avaliar privilégios e condições inseguras no estágio de execução e no build. Identificar explicitamente as regras bloqueantes e as justificativas contextuais.
 - DAST: exigir prontidão, alcance real dos endpoints e resultado válido. Definir regras bloqueantes a partir de risco/confiança e contexto; respostas 404/500 ou scanner iniciado não comprovam cobertura.
 - Para todas: erro operacional bloqueia por padrão, exceções são específicas e revisáveis, e nenhum scanner pode ser omitido para aprovar o trabalho completo.
 
@@ -79,3 +99,5 @@ Em SCA, preservar a execução bloqueada com Router 6.30.6 e a execução poster
 Pipeline reprovado e impedimento de merge são controles diferentes. Para impedir merge, configurar uma regra da branch exigindo `Security gate` e revisão das alterações de workflow/política, quando disponível no plano do repositório. Sem isso, o CI reprova, mas quem tem permissão ainda pode enviar alterações diretamente.
 
 Em SAST, os cenários isolados `sast-fixture` e `sast-corrected` preservam regras/política e registram fontes/diff. O primeiro deve reprovar o gate por SQL injection e XSS; o segundo deve aprovar. `sast-operational-failure` introduz PHP inválido somente no alvo temporário e deve reprovar como análise incompleta. A aplicação real é analisada em todos os cenários.
+
+Em IaC, comparar `iac-fixture` e `iac-corrected`: são cópias isoladas do Dockerfile, com root/healthcheck desativado e posterior restauração. Nunca são construídas/executadas. A análise real permanece obrigatória em todos os cenários. `iac-operational-failure` usa alvo inválido e deve reprovar como análise inválida. Guardar hashes de política, regras locais, imagem e entradas.

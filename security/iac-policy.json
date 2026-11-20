@@ -1,0 +1,131 @@
+{
+  "schema_version": 1,
+  "checks": {
+    "CKV_DOCKER_1": {
+      "decision": "block",
+      "reason": "Controle de privilégio, prontidão, exposição ou consistência do build exigido nesta aplicação."
+    },
+    "CKV_DOCKER_2": {
+      "decision": "block",
+      "reason": "Controle de privilégio, prontidão, exposição ou consistência do build exigido nesta aplicação."
+    },
+    "CKV_DOCKER_3": {
+      "decision": "block",
+      "reason": "Controle de privilégio, prontidão, exposição ou consistência do build exigido nesta aplicação."
+    },
+    "CKV_DOCKER_4": {
+      "decision": "review",
+      "reason": "Revisar prática de build; o uso isolado de ADD, MAINTAINER ou apt não prova exploração."
+    },
+    "CKV_DOCKER_5": {
+      "decision": "block",
+      "reason": "Controle de privilégio, prontidão, exposição ou consistência do build exigido nesta aplicação."
+    },
+    "CKV_DOCKER_6": {
+      "decision": "review",
+      "reason": "Revisar prática de build; o uso isolado de ADD, MAINTAINER ou apt não prova exploração."
+    },
+    "CKV_DOCKER_7": {
+      "decision": "block",
+      "reason": "Controle de privilégio, prontidão, exposição ou consistência do build exigido nesta aplicação."
+    },
+    "CKV_DOCKER_8": {
+      "decision": "block",
+      "reason": "Controle de privilégio, prontidão, exposição ou consistência do build exigido nesta aplicação."
+    },
+    "CKV_DOCKER_9": {
+      "decision": "review",
+      "reason": "Revisar prática de build; o uso isolado de ADD, MAINTAINER ou apt não prova exploração."
+    },
+    "CKV_DOCKER_10": {
+      "decision": "block",
+      "reason": "Controle de privilégio, prontidão, exposição ou consistência do build exigido nesta aplicação."
+    },
+    "CKV_DOCKER_11": {
+      "decision": "block",
+      "reason": "Controle de privilégio, prontidão, exposição ou consistência do build exigido nesta aplicação."
+    },
+    "CKV2_DOCKER_1": {
+      "decision": "block",
+      "reason": "Não permitir escalada com sudo, desativação de verificações TLS/assinaturas ou manipulação insegura de senhas no build."
+    },
+    "CKV2_DOCKER_2": {
+      "decision": "block",
+      "reason": "Não permitir escalada com sudo, desativação de verificações TLS/assinaturas ou manipulação insegura de senhas no build."
+    },
+    "CKV2_DOCKER_3": {
+      "decision": "block",
+      "reason": "Não permitir escalada com sudo, desativação de verificações TLS/assinaturas ou manipulação insegura de senhas no build."
+    },
+    "CKV2_DOCKER_4": {
+      "decision": "block",
+      "reason": "Não permitir escalada com sudo, desativação de verificações TLS/assinaturas ou manipulação insegura de senhas no build."
+    },
+    "CKV2_DOCKER_5": {
+      "decision": "block",
+      "reason": "Não permitir escalada com sudo, desativação de verificações TLS/assinaturas ou manipulação insegura de senhas no build."
+    },
+    "CKV2_DOCKER_6": {
+      "decision": "block",
+      "reason": "Não permitir escalada com sudo, desativação de verificações TLS/assinaturas ou manipulação insegura de senhas no build."
+    },
+    "CKV2_DOCKER_7": {
+      "decision": "block",
+      "reason": "Não permitir escalada com sudo, desativação de verificações TLS/assinaturas ou manipulação insegura de senhas no build."
+    },
+    "CKV2_DOCKER_8": {
+      "decision": "block",
+      "reason": "Não permitir escalada com sudo, desativação de verificações TLS/assinaturas ou manipulação insegura de senhas no build."
+    },
+    "CKV2_DOCKER_9": {
+      "decision": "block",
+      "reason": "Não permitir escalada com sudo, desativação de verificações TLS/assinaturas ou manipulação insegura de senhas no build."
+    },
+    "CKV2_DOCKER_10": {
+      "decision": "block",
+      "reason": "Não permitir escalada com sudo, desativação de verificações TLS/assinaturas ou manipulação insegura de senhas no build."
+    },
+    "CKV2_DOCKER_11": {
+      "decision": "block",
+      "reason": "Não permitir escalada com sudo, desativação de verificações TLS/assinaturas ou manipulação insegura de senhas no build."
+    },
+    "CKV2_DOCKER_12": {
+      "decision": "block",
+      "reason": "Não permitir escalada com sudo, desativação de verificações TLS/assinaturas ou manipulação insegura de senhas no build."
+    },
+    "CKV2_DOCKER_13": {
+      "decision": "block",
+      "reason": "Não permitir escalada com sudo, desativação de verificações TLS/assinaturas ou manipulação insegura de senhas no build."
+    },
+    "CKV2_DOCKER_14": {
+      "decision": "block",
+      "reason": "Não permitir escalada com sudo, desativação de verificações TLS/assinaturas ou manipulação insegura de senhas no build."
+    },
+    "CKV2_DOCKER_15": {
+      "decision": "block",
+      "reason": "Não permitir escalada com sudo, desativação de verificações TLS/assinaturas ou manipulação insegura de senhas no build."
+    },
+    "CKV2_DOCKER_16": {
+      "decision": "block",
+      "reason": "Não permitir escalada com sudo, desativação de verificações TLS/assinaturas ou manipulação insegura de senhas no build."
+    },
+    "CKV2_DOCKER_17": {
+      "decision": "block",
+      "reason": "Não permitir escalada com sudo, desativação de verificações TLS/assinaturas ou manipulação insegura de senhas no build."
+    },
+    "CKV_ACME_DOCKER_1": {
+      "decision": "block",
+      "reason": "O estágio final app deve selecionar explicitamente usuário não root, incluindo UID numérico."
+    },
+    "CKV_ACME_DOCKER_2": {
+      "decision": "block",
+      "reason": "O estágio final app deve declarar healthcheck ativo; não aceitar NONE nem herdar a comprovação de um estágio de build."
+    },
+    "CKV_ACME_DOCKER_3": {
+      "decision": "block",
+      "reason": "Imagens externas de FROM e COPY devem ser fixadas por digest; aliases internos são permitidos."
+    }
+  },
+  "unknown_check": "block",
+  "exceptions": []
+}

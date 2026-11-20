@@ -62,7 +62,7 @@ Os testes unitários usam a resposta npm real anterior à correção e exemplos 
 - [React Router: migração v6 → v7](https://github.com/remix-run/react-router/blob/v7/docs/upgrading/v6.md).
 - Advisories oficiais vinculados na tabela acima.
 
-Integração, análise e testes preparados com apoio do OpenAI Codex, sujeitos à revisão e compreensão pelo estudante. SAST foi integrado na [etapa 3](sast.md); IaC e DAST permanecem para as próximas etapas.
+Integração, análise e testes preparados com apoio do OpenAI Codex, sujeitos à revisão e compreensão pelo estudante. SAST foi integrado na [etapa 3](sast.md); IaC foi integrada na [etapa 4](iac.md); DAST permanece para a próxima etapa.
 
 ## Registro da revalidação
 

@@ -1,6 +1,6 @@
 # Etapa 3 — SAST de PHP e React
 
-Integração: `scripts/security/sast.py`, `security/sast-policy.json` e job **SAST (PHP and React)** no workflow `Security`. O gate final exige esse job, Secret Detection, ambos os SCA e os testes de política. IaC e DAST continuam pendentes.
+Integração: `scripts/security/sast.py`, `security/sast-policy.json` e job **SAST (PHP and React)** no workflow `Security`. O gate final exige esse job, Secret Detection, ambos os SCA e os testes de política. IaC foi integrada na [etapa 4](iac.md); DAST continua pendente.
 
 ## Ferramenta, regras e cobertura
 
@@ -69,7 +69,7 @@ Baixar o artifact **`sast-<run_id>-<attempt>`** de cada execução antes dos 14 
 
 No relatório, registrar commit e URL/ID de cada execução, identificar a simulação e comparar `rules_sha256`/`policy_sha256` entre `sast-fixture` e `sast-corrected`. A correção está nos exemplos, não em uma alteração das regras. Não é preciso inventar dois commits de correção da aplicação: as execuções distintas sobre fontes diferentes e o diff preservam o ciclo. O caso real SCA já dispõe de commits separados antes/depois.
 
-O responsável acompanha o repositório privado no próprio navegador. Até sua confirmação, os resultados do Actions são **esperados**, não observados pelo Codex. Manter essa distinção ao escrever o relatório.
+O responsável acompanha o repositório privado no próprio navegador. As confirmações recebidas estão registradas abaixo; distinguir essa confirmação do responsável de inspeção direta pelo Codex ao escrever o relatório.
 
 ## Validações locais e fontes
 
@@ -81,3 +81,7 @@ Na implementação: download com cache vazio e hashes válidos; análise dos 27 
 - [Licença das regras](https://semgrep.dev/legal/rules-license/).
 
 Seleção, integração, análise e testes desenvolvidos com apoio do OpenAI Codex. O estudante deve revisar as decisões e usar evidências selecionadas no relatório, preservando a autoria e a origem das regras.
+
+## Confirmação das execuções no Actions
+
+Em 20/11/2026, Jonatan confirmou as execuções do commit `3c27aa3064e65f55c3c55226e3e40db33e9a5e28`: `normal` e `sast-corrected` aprovaram; `sast-fixture` e `sast-operational-failure` reprovaram conforme esperado. Resultado informado pelo responsável após inspeção no próprio navegador, não por acesso direto do Codex ao Actions. Guardar as URLs/IDs e os artifacts dessas execuções como evidência do relatório.
