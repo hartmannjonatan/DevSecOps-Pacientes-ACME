@@ -1,0 +1,83 @@
+name: Security
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      scenario:
+        description: 'Controlled demonstration (non-normal scenarios intentionally fail)'
+        type: choice
+        default: normal
+        options:
+          - normal
+          - secret-fixture
+          - operational-failure
+
+permissions:
+  contents: read
+
+jobs:
+  secret-detection:
+    name: Secret Detection
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout complete history
+        id: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Scan files and history and apply policy
+        run: scripts/security/scan
+      - name: Controlled failure demonstration
+        if: ${{ !cancelled() && steps.checkout.outcome == 'success' && github.event_name == 'workflow_dispatch' && inputs.scenario != 'normal' }}
+        env:
+          SCENARIO: ${{ inputs.scenario }}
+        run: python3 scripts/security/demo.py "$SCENARIO"
+      - name: Preserve sanitized evidence
+        if: ${{ !cancelled() && steps.checkout.outcome == 'success' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: secret-detection-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            artifacts/security/secrets/result.json
+            artifacts/security/demo/result.json
+          if-no-files-found: error
+          retention-days: 14
+
+  policy-tests:
+    name: Security policy tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Exercise the real scanner and failure handling in isolated repositories
+        run: python3 -m unittest discover -s tests/security -v
+      - name: Preserve controlled before/after evidence
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: security-controls-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/security/controls/
+          if-no-files-found: error
+          retention-days: 14
+
+  security-gate:
+    name: Security gate
+    if: ${{ always() }}
+    needs: [secret-detection, policy-tests]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Require successful scans and control tests
+        env:
+          SECRET_DETECTION_RESULT: ${{ needs.secret-detection.result }}
+          POLICY_TESTS_RESULT: ${{ needs.policy-tests.result }}
+        run: |
+          printf 'Secret Detection: %s\nPolicy tests: %s\n' "$SECRET_DETECTION_RESULT" "$POLICY_TESTS_RESULT"
+          test "$SECRET_DETECTION_RESULT" = success
+          test "$POLICY_TESTS_RESULT" = success

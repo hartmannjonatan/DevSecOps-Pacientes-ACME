@@ -10,3 +10,4 @@ public/build
 public/bundles
 artifacts
 *.log
+__pycache__
