@@ -1,8 +1,8 @@
-# Política de segurança — versão 2
+# Política de segurança — versão 3
 
-Escopo: demonstração acadêmica Pacientes ACME, com dados fictícios, executada localmente e no CI. Objetivo: decidir a aprovação com evidências válidas, mantendo resultados de segurança separados de erros de execução. Esta versão aplica **Secret Detection e SCA**; SAST, IaC e DAST ainda não estão implementados e não são declarados aprovados.
+Escopo: demonstração acadêmica Pacientes ACME, com dados fictícios, executada localmente e no CI. Objetivo: decidir a aprovação com evidências válidas, mantendo resultados de segurança separados de erros de execução. Esta versão aplica **Secret Detection, SCA e SAST**; IaC e DAST ainda não estão implementados e não são declarados aprovados.
 
-## Decisão atual, efetivamente automatizada
+## Decisão de Secret Detection e composição do gate
 
 | Condição | Resultado | Saída do script |
 |---|---|---|
@@ -13,7 +13,7 @@ Escopo: demonstração acadêmica Pacientes ACME, com dados fictícios, executad
 
 Gitleaks não oferece uma classificação uniforme de severidade para todos os segredos. Uma credencial detectada e ainda não avaliada é potencialmente utilizável: **todo achado não excepcionado bloqueia**, inclusive no histórico. O tratamento depende do contexto; não se presume que um token seja inofensivo porque está antigo ou não aparece mais no arquivo atual.
 
-`Security gate` exige sucesso dos jobs `Secret Detection`, **ambas as entradas da matriz SCA (Composer/npm)** e `Security policy tests`, executa mesmo se outro job falhar e reprova também para `failure`, `cancelled` ou `skipped`. A matriz não cancela o outro ecossistema quando um falha. Não há `continue-on-error`, baseline automática, `|| true` para aprovar o scanner nem exceção de falha operacional. A coleta de artefatos pode ocorrer depois da falha e não transforma o job em sucesso. Falha de upload também impede aprovação.
+`Security gate` exige sucesso dos jobs `Secret Detection`, **ambas as entradas da matriz SCA (Composer/npm)**, `SAST (PHP and React)` e `Security policy tests`, executa mesmo se outro job falhar e reprova também para `failure`, `cancelled` ou `skipped`. A matriz não cancela o outro ecossistema quando um falha. Não há `continue-on-error`, baseline automática, `|| true` para aprovar o scanner nem exceção de falha operacional. A coleta de artefatos pode ocorrer depois da falha e não transforma o job em sucesso. Falha de upload também impede aprovação.
 
 ## Exceções de Secret Detection
 
@@ -41,25 +41,41 @@ Justificativa contextual: bibliotecas de runtime são distribuídas no backend/b
 
 Metavulnerabilidades npm (por exemplo, `react-router-dom` afetado por depender de `react-router`) conservam a cadeia e os IDs dos advisories; não são apresentadas como novos CVEs independentes. Pacote abandonado indica manutenção, não necessariamente uma vulnerabilidade. Novas categorias não vazias do Composer que o integrador ainda não reconhece causam falha operacional, nunca aprovação silenciosa.
 
-Exceções SCA, se necessárias, devem identificar **ecossistema + pacote + versão exata + advisory**, com justificativa, classificação, risco, controles, responsável e vencimento. Todos os advisories/versões de um achado precisam estar cobertos; versões novas e pacotes pais não herdam a exceção. Exceções expiradas/incompletas reprovam. O registro começa vazio: os avisos do Router serão tratados pela atualização pontual da dependência, sem relaxar a política.
+Exceções SCA, se necessárias, devem identificar **ecossistema + pacote + versão exata + advisory**, com justificativa, classificação, risco, controles, responsável e vencimento. Todos os advisories/versões de um achado precisam estar cobertos; versões novas e pacotes pais não herdam a exceção. Exceções expiradas/incompletas reprovam. O registro começa vazio: os avisos do Router foram tratados pela atualização pontual da dependência, sem relaxar a política.
 
 Os dois advisories iniciais do Router são moderados e estão em dependências de runtime; portanto bloqueiam enquanto não forem corrigidos ou excepcionados. A análise de aplicabilidade em `docs/sca.md` distingue versão afetada de exploração demonstrada. Optou-se por corrigir a dependência em vez de manter uma exceção, inclusive para o advisory SSR não aplicável ao modo atual.
+
+## Política SAST
+
+Configuração executável: `security/sast-policy.json`. Semgrep CE 1.186.0 analisa o código PHP/JavaScript/JSX/TypeScript próprio, incluindo configuração em código, migrações, build e testes. As 89 regras selecionadas de PHP, Doctrine, Symfony, JavaScript/browser e React são identificadas por revisão e hashes em `security/semgrep/provenance.json`. O guia `docs/sast.md` descreve limites e obtenção das regras. Não há upload do código para um serviço SAST.
+
+| Evidência da regra | Decisão |
+|---|---|
+| Severidade `ERROR` ou `WARNING`, confiança `HIGH` ou `MEDIUM` | Bloqueia para correção ou análise específica |
+| Confiança `LOW`, ou severidade `INFO` | Mantém `review`, exige análise documentada; não bloqueia automaticamente |
+| Severidade/confiança desconhecida | Bloqueia até revisão |
+| Scanner indisponível, download/hash inválido, relatório inválido, parsing incompleto, timeout, regra pulada ou arquivo selecionado não analisado | Falha operacional, bloqueia |
+
+A confiança é a estimativa da regra, não comprovação automática de explorabilidade. O contexto de dados HTTP no backend e de dados da API no navegador justifica impedir padrões de injeção com confiança média/alta. Regras genéricas de auditoria com confiança baixa exigem inspeção antes de alterar código funcional; o alerta de `unlink` em `tests/functional.php` foi revisado e não recebe dados do usuário. O relatório mantém esse alerta. Não existe exceção SAST nem supressão por `nosemgrep`; o registro de exceções deve permanecer vazio até haver implementação e revisão de um mecanismo específico. Alterações nas regras/política requerem revalidação dos controles.
+
+Saídas do integrador: 0 = análise válida sem bloqueantes (pode haver `review`), 1 = violação, 2 = erro operacional. O scanner nativo pode retornar 1 por um alerta de revisão e o integrador retornar 0: isso aplica a política explícita e não mascara uma falha de execução. A validade do JSON, cobertura e coerência com o retorno nativo são verificadas antes dessa decisão.
 
 ## Evolução para as outras categorias
 
 As decisões abaixo orientam as próximas etapas; seus controles ainda serão implementados e demonstrados:
 
-- SAST: avaliar evidência e fluxo de dados das regras habilitadas. Regras bloqueantes e critérios de confiança serão versionados junto da integração, após verificar sua cobertura PHP/JSX.
 - IaC: avaliar privilégios e condições inseguras no estágio de execução e no build. Identificar explicitamente as regras bloqueantes e as justificativas contextuais.
 - DAST: exigir prontidão, alcance real dos endpoints e resultado válido. Definir regras bloqueantes a partir de risco/confiança e contexto; respostas 404/500 ou scanner iniciado não comprovam cobertura.
 - Para todas: erro operacional bloqueia por padrão, exceções são específicas e revisáveis, e nenhum scanner pode ser omitido para aprovar o trabalho completo.
 
 ## Evidências e avaliação
 
-Registrar commit, versão/digest da ferramenta, hash da configuração, alvos, validade da análise, achados, decisão e limitações. Os relatórios publicáveis não incluem valor do segredo, trecho original, e-mail do autor ou mensagem de commit. O runner usa somente `contents: read`, sem credenciais da aplicação; as actions e o scanner estão fixados por SHA/digest.
+Registrar commit, versão/digest da ferramenta, hash da configuração, alvos, validade da análise, achados, decisão e limitações. Os relatórios de Secret Detection não incluem valor do segredo, trecho original, e-mail do autor ou mensagem de commit. O JSON SAST pode incluir trechos de código; revisar os artifacts antes da entrega acadêmica. O runner usa somente `contents: read`, sem credenciais da aplicação; as actions e o scanner estão fixados por SHA/digest.
 
 O teste sintético isolado exercita detectar → bloquear → remover o literal não commitado → revalidar com as mesmas regras. A demonstração manual `secret-fixture` deve reprovar **o workflow inteiro**. `operational-failure` usa uma configuração TOML inválida no scanner real e deve reprovar como falha operacional. Não são descobertas espontâneas na aplicação. As execuções reais do GitHub precisam ser guardadas como evidências; testes locais não substituem essa comprovação.
 
 Em SCA, preservar a execução bloqueada com Router 6.30.6 e a execução posterior à correção, identificando commits, hashes de lockfiles e o mesmo hash da política. O cenário `sca-operational-failure` retira a rede apenas da auditoria npm real: deve gerar `operational_error` e reprovar o resultado final. Fixtures de respostas usadas em testes unitários não substituem as consultas reais dos jobs SCA.
 
 Pipeline reprovado e impedimento de merge são controles diferentes. Para impedir merge, configurar uma regra da branch exigindo `Security gate` e revisão das alterações de workflow/política, quando disponível no plano do repositório. Sem isso, o CI reprova, mas quem tem permissão ainda pode enviar alterações diretamente.
+
+Em SAST, os cenários isolados `sast-fixture` e `sast-corrected` preservam regras/política e registram fontes/diff. O primeiro deve reprovar o gate por SQL injection e XSS; o segundo deve aprovar. `sast-operational-failure` introduz PHP inválido somente no alvo temporário e deve reprovar como análise incompleta. A aplicação real é analisada em todos os cenários.

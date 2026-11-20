@@ -1,0 +1,368 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/semgrep/semgrep-rules",
+  "commit": "a5ad1714f00c9f7fde980cab0ea1d6dc6d414fd2",
+  "license": "https://semgrep.dev/legal/rules-license",
+  "transformation": "YAML to JSON; prefix IDs with original file path to avoid collisions; patterns and metadata unchanged",
+  "rules_sha256": "f87f61e527b03305567bc6d79bf3ca7fcdc4a0c488241ccd72e97c576fbb1b67",
+  "rule_count": 89,
+  "sources": [
+    {
+      "path": "php/lang/security/assert-use.yaml",
+      "sha256": "63db5f99037e7e4de33bd4a1678858d9172ab7e40828c827626b468a09f77dc9"
+    },
+    {
+      "path": "php/lang/security/audit/assert-use-audit.yaml",
+      "sha256": "c0034019fb0fb01ab2eaecfd65da12f3195b7dd558a98b657aa1f90034ff894a"
+    },
+    {
+      "path": "php/lang/security/audit/openssl-decrypt-validate.yaml",
+      "sha256": "b85f3024775980714d11aa90299ca42ba45320f64b44024a83b1921ee2c8d6e3"
+    },
+    {
+      "path": "php/lang/security/audit/sha224-hash.yaml",
+      "sha256": "6dedb773c8c594998a5639c0451114084ffd654b7788028502473e345096df42"
+    },
+    {
+      "path": "php/lang/security/backticks-use.yaml",
+      "sha256": "50e36447646b19bac7f18762c25c1150011b6abab745a1e6dc109b30d3fccddd"
+    },
+    {
+      "path": "php/lang/security/base-convert-loses-precision.yaml",
+      "sha256": "709734ca2083303d0b6ee76aa6a1e6f62a3169b8810cd00bb127e34dbb535fb2"
+    },
+    {
+      "path": "php/lang/security/curl-ssl-verifypeer-off.yaml",
+      "sha256": "20ceda53231cfda6e160fb12f2d861bda3d2e86665cd3a3b3bc891966e32eb7b"
+    },
+    {
+      "path": "php/lang/security/deserialization.yaml",
+      "sha256": "8eaab9cdd2729802607030de91e61a5989c1c1d0bd05edb22c64245c8276c0b4"
+    },
+    {
+      "path": "php/lang/security/eval-use.yaml",
+      "sha256": "cd7bfa0e6c39db14f0a6ef86a74a7eb56bc14fd5216716e9ca204546c2e14d37"
+    },
+    {
+      "path": "php/lang/security/exec-use.yaml",
+      "sha256": "366442d56eeaccf28815a3bf38f279ec3d8699a4eafc6bbca503ead8ccefa944"
+    },
+    {
+      "path": "php/lang/security/file-inclusion.yaml",
+      "sha256": "8713fe074acdcfa3d0e27e6c6f85ab7468d8bb8dc82670faf729699e422915fb"
+    },
+    {
+      "path": "php/lang/security/ftp-use.yaml",
+      "sha256": "a4a7b1a826c143710e21b65207242c65bfaa7faed8ff61c56fe7335e3b626f9d"
+    },
+    {
+      "path": "php/lang/security/injection/echoed-request.yaml",
+      "sha256": "50179ab219afbc106ca8bdd095d74ddd7bb7f69827c3df90fefc1f5a1e041456"
+    },
+    {
+      "path": "php/lang/security/injection/printed-request.yaml",
+      "sha256": "f740dc032cefe07e58cf5d9218e35720149af5cf3c86288d7f4e527fa7373baa"
+    },
+    {
+      "path": "php/lang/security/injection/tainted-callable.yaml",
+      "sha256": "b3e2009224cc6ea85c65b5f67f18332241997cc36a3ea727fc21fd88e81f9e5a"
+    },
+    {
+      "path": "php/lang/security/injection/tainted-exec.yaml",
+      "sha256": "ed3915ed588f001e620192419b7ad7d777d5937e7bfe086d7e79845557507e5a"
+    },
+    {
+      "path": "php/lang/security/injection/tainted-filename.yaml",
+      "sha256": "51e1320166d8d3a735040961b6f9321ea619fb0b3b5f49ef489646eb29adad40"
+    },
+    {
+      "path": "php/lang/security/injection/tainted-object-instantiation.yaml",
+      "sha256": "80c9674217bf54f5131a5f9f41aba98cdb99f995b229d94477ccce91615a5b53"
+    },
+    {
+      "path": "php/lang/security/injection/tainted-session.yaml",
+      "sha256": "9d821b2c98e6305e340e372dfc61a300573eb941026bd30437fbcf0c09a158dc"
+    },
+    {
+      "path": "php/lang/security/injection/tainted-sql-string.yaml",
+      "sha256": "9b2f04984c4d39cd9d20793be13196db816609bfc052237973a2e378375c6e1d"
+    },
+    {
+      "path": "php/lang/security/injection/tainted-url-host.yaml",
+      "sha256": "f76530bcff79730a741288d6ec84e9240db6f3f1bc1a75e0f0c35aad795bb548"
+    },
+    {
+      "path": "php/lang/security/injection/trigger-error.yaml",
+      "sha256": "2ed23abb4724bf13c7ea1f74514df5d0566bf577c693de918f382fd4c285f844"
+    },
+    {
+      "path": "php/lang/security/ldap-bind-without-password.yaml",
+      "sha256": "08093d5c86aae39188821357fa889bda34b3feac9183c6c026999fb94236aee9"
+    },
+    {
+      "path": "php/lang/security/mb-ereg-replace-eval.yaml",
+      "sha256": "f8ccd6fe724455cf9aa49c340156f80b95f6dd21ad2cfb7dbd8bfa5ea614586d"
+    },
+    {
+      "path": "php/lang/security/mcrypt-use.yaml",
+      "sha256": "e195f27213f475d8b99a2eb5ce8a057409b643be593372871f88bca1e29e0b60"
+    },
+    {
+      "path": "php/lang/security/md5-loose-equality.yaml",
+      "sha256": "323570cf393ba4302e3af1c93cf1a3edba8954e64075a0b56f59577f73d15c07"
+    },
+    {
+      "path": "php/lang/security/md5-used-as-password.yaml",
+      "sha256": "84babc0e7de95d1f687f9d4f6dbd5db4a9de36c2d325259c7c67c752cdc0dfb7"
+    },
+    {
+      "path": "php/lang/security/openssl-cbc-static-iv.yaml",
+      "sha256": "63d94caeb5d145992edbee8c6bfb7650b370ef7f99aa8d0c28ca3f7d493bccbf"
+    },
+    {
+      "path": "php/lang/security/php-permissive-cors.yaml",
+      "sha256": "12a06597e1b5fc72f76d06551f93f8c38b0b24f4db0d93f4dc813070884faf09"
+    },
+    {
+      "path": "php/lang/security/php-ssrf.yaml",
+      "sha256": "2f0ac8be319d87e3faab92d18e465607bde5f226d07c9d7552a5a62a88d991c6"
+    },
+    {
+      "path": "php/lang/security/phpinfo-use.yaml",
+      "sha256": "30decd1ec3147d6d781bfa1b62877fb9d0b870a996f467c8cb13d85018e3b832"
+    },
+    {
+      "path": "php/lang/security/redirect-to-request-uri.yaml",
+      "sha256": "d3f9cc3a09b5321439c7a0245d8d3d0676d455141b25dd897fabc37fc39206df"
+    },
+    {
+      "path": "php/lang/security/tainted-exec.yaml",
+      "sha256": "3a908167a9f1ff41f09bcc67c4fbf4b6f6a55aafa5f04faf390dd3e54cb210b6"
+    },
+    {
+      "path": "php/lang/security/unlink-use.yaml",
+      "sha256": "aaebc15fc48d07aa06fb48c6b04bd48332c7dc1f6e99e5395abade1b5219ad9c"
+    },
+    {
+      "path": "php/lang/security/unserialize-use.yaml",
+      "sha256": "d97789662a23c60958309a7fd4fe2c92ffd1a106134ff6ee541bf35389b58009"
+    },
+    {
+      "path": "php/lang/security/weak-crypto.yaml",
+      "sha256": "08067d28c0bdb43c26988512808461eee1db80d2ce610052c0d6279158dc1229"
+    },
+    {
+      "path": "php/doctrine/security/audit/doctrine-dbal-dangerous-query.yaml",
+      "sha256": "3527c1595ab8a85830c672a7f7c884e630657f414785ca9a3f873b499337ee2f"
+    },
+    {
+      "path": "php/doctrine/security/audit/doctrine-orm-dangerous-query.yaml",
+      "sha256": "3da72d9d4d9df6f05095bb84838679f4cf6fc82aa41905c1fbdb25a84bfdf5c6"
+    },
+    {
+      "path": "php/symfony/security/audit/symfony-csrf-protection-disabled.yaml",
+      "sha256": "3c236b944b696d3534b90b980f5a7c4fdb346e10e4e5d7f57dbebb1f83702ce1"
+    },
+    {
+      "path": "php/symfony/security/audit/symfony-non-literal-redirect.yaml",
+      "sha256": "79eacbe22152b3fedd1258f939645daf0bd0acae2d6e6d28af4112603ccc8099"
+    },
+    {
+      "path": "php/symfony/security/audit/symfony-permissive-cors.yaml",
+      "sha256": "489d45c4c2522b4c0263507f3ce5c4645c00ba549df33d0e9acdc0596490ca56"
+    },
+    {
+      "path": "javascript/browser/security/dom-based-xss.yaml",
+      "sha256": "d34055a348ee0d5e6f5587825bd14c9546997550e624e3966e5ef8438f86381d"
+    },
+    {
+      "path": "javascript/browser/security/eval-detected.yaml",
+      "sha256": "356589363d16cda8bd2ca1d296ce2b6953105ee4c751ddbbc9bcde5849341811"
+    },
+    {
+      "path": "javascript/browser/security/insecure-document-method.yaml",
+      "sha256": "c2071baab4896cb66b3337ef2d901c9c772a6cbcfd4b2c942efb74ee0be3b7f3"
+    },
+    {
+      "path": "javascript/browser/security/insecure-innerhtml.yaml",
+      "sha256": "3f2854f92c3c8a1ba3a107a140a5b31789650851be57586fd21a409e129193e4"
+    },
+    {
+      "path": "javascript/browser/security/insufficient-postmessage-origin-validation.yaml",
+      "sha256": "72e69717624b282e678e03aeab8416c883a9d0c286f0496af406a80fd4dcc2bf"
+    },
+    {
+      "path": "javascript/browser/security/open-redirect-from-function.yaml",
+      "sha256": "6afe3ff95252261c3f3502bda97921193e821a6931119f945fa30aae3c122b8d"
+    },
+    {
+      "path": "javascript/browser/security/open-redirect.yaml",
+      "sha256": "896332cf7d17f4ccea855006baebfddd83ccf90e07315958bb62bbc2916950f4"
+    },
+    {
+      "path": "javascript/browser/security/raw-html-concat.yaml",
+      "sha256": "39c8c842711e452c1b4b0b03bc526652d69c887b6ac790215604ec4cde80a403"
+    },
+    {
+      "path": "javascript/browser/security/raw-html-join.yaml",
+      "sha256": "276ca2addaf9507ef1a792411ff8bc71f55f7c93ddbedee902b1a627c1fa271b"
+    },
+    {
+      "path": "javascript/browser/security/wildcard-postmessage-configuration.yaml",
+      "sha256": "4bb9d0a44a38c433ebe1b3df30895576a056262c3e12da57cee9c6be9fc0d813"
+    },
+    {
+      "path": "javascript/lang/security/audit/code-string-concat.yaml",
+      "sha256": "6a1d29327dd908382bdf9109e223f6ed4ca6167ae2be6617b59191c892e3c0cc"
+    },
+    {
+      "path": "javascript/lang/security/audit/dangerous-spawn-shell.yaml",
+      "sha256": "1a81f91e9ad9ea4c62a9b0bda4dcf3cf2fc1bb6f2d9e2580ea3effa6bfe9ba74"
+    },
+    {
+      "path": "javascript/lang/security/audit/detect-non-literal-fs-filename.yaml",
+      "sha256": "3a7da5626cf3186380f3be1daf1ed38ba766075912d9b0dcd7ae73b7c51bb42e"
+    },
+    {
+      "path": "javascript/lang/security/audit/detect-non-literal-regexp.yaml",
+      "sha256": "cc2b78967131265c24e9700f36195ef1f3ba11f651598ee8a583e900c60e03fc"
+    },
+    {
+      "path": "javascript/lang/security/audit/detect-non-literal-require.yaml",
+      "sha256": "f02a0340092111bfea7df82492e9f1ad12071403984b9c863c3f755bc815d8c5"
+    },
+    {
+      "path": "javascript/lang/security/audit/detect-redos.yaml",
+      "sha256": "c649d508a43408dee1339e4f49415cbfb1cacfc7b1cafb7cb22ba81f335665bb"
+    },
+    {
+      "path": "javascript/lang/security/audit/hardcoded-hmac-key.yaml",
+      "sha256": "fdca07b8fc42fa0d1e24be2a372e719f21b09c060f09716ee7008a1df1dfd52a"
+    },
+    {
+      "path": "javascript/lang/security/audit/incomplete-sanitization.yaml",
+      "sha256": "54b042cc05900fd624852cac1bb4962c2d33a0674d468b4a61a6fae8d2a64250"
+    },
+    {
+      "path": "javascript/lang/security/audit/md5-used-as-password.yaml",
+      "sha256": "95f8166a5066f012641c89fbc59e9ee98299f886cb70d2057b1e6cc741561b33"
+    },
+    {
+      "path": "javascript/lang/security/audit/path-traversal/path-join-resolve-traversal.yaml",
+      "sha256": "d9a1c9b559fee5b993bb9150fead40a48570a58f08762d7b6674125f6e0784bc"
+    },
+    {
+      "path": "javascript/lang/security/audit/prototype-pollution/prototype-pollution-assignment.yaml",
+      "sha256": "c494050bfb86b17b96497f1acb6f2cffe68890c2658e3ccf36945c6fda61e67d"
+    },
+    {
+      "path": "javascript/lang/security/audit/prototype-pollution/prototype-pollution-loop.yaml",
+      "sha256": "f781360a7d929bea0dacf339e30060e441f9e738aee0d1b6481219fea49126c5"
+    },
+    {
+      "path": "javascript/lang/security/audit/spawn-shell-true.yaml",
+      "sha256": "452fb593301edca721a151ed3c051f428ca1df1fc1af613380d58b076601b5ba"
+    },
+    {
+      "path": "javascript/lang/security/audit/sqli/node-knex-sqli.yaml",
+      "sha256": "074be35c73756917896e051a8d77a8a705c7ef54d4846d7a93c829e4d68aabd2"
+    },
+    {
+      "path": "javascript/lang/security/audit/sqli/node-mssql-sqli.yaml",
+      "sha256": "a3c995249bdd6ffbf3d36ba42cdd1f1c04798bb0e41765bd396a218516e59ee9"
+    },
+    {
+      "path": "javascript/lang/security/audit/sqli/node-mysql-sqli.yaml",
+      "sha256": "152d5848cbcb5bdd3555507eb4a55b5ee2cd7276effbd5975a7da97d82bba0d0"
+    },
+    {
+      "path": "javascript/lang/security/audit/sqli/node-postgres-sqli.yaml",
+      "sha256": "23709e35b9ce213d8306c793a3174320dcf3141043e31297fcdec48735c1bbd8"
+    },
+    {
+      "path": "javascript/lang/security/audit/unknown-value-with-script-tag.yaml",
+      "sha256": "c22e6be10888c9c457ddfb8d75dd70e812d0c9667e9b3bd910e3f3bc504d8892"
+    },
+    {
+      "path": "javascript/lang/security/audit/unsafe-dynamic-method.yaml",
+      "sha256": "3608be77e1a11f4a4b756b9ccf8cd95e8e93c311f84a69e5483c5af560d5d790"
+    },
+    {
+      "path": "javascript/lang/security/audit/unsafe-formatstring.yaml",
+      "sha256": "6e0f93aaccf1eb08bd02bd160768d41dda2a3b5de2a26d55e18f417ee0ff408c"
+    },
+    {
+      "path": "javascript/lang/security/detect-buffer-noassert.yaml",
+      "sha256": "e6566d2c7138b038e1c3167f3e9ff98550cf81a2d70caa94a5362a55294077f6"
+    },
+    {
+      "path": "javascript/lang/security/detect-child-process.yaml",
+      "sha256": "baee696b05b3c38fa5a82435ae458026ec81ce9a6e6a73116d68dc963496296c"
+    },
+    {
+      "path": "javascript/lang/security/detect-disable-mustache-escape.yaml",
+      "sha256": "8d6d81249121230be2d11fd7a2cce2ce23837520f8e0fc1df45868ec159edb09"
+    },
+    {
+      "path": "javascript/lang/security/detect-eval-with-expression.yaml",
+      "sha256": "3b8fe2524b094c72c34aaa6d21b0408ffdac2471a335125cf726993253777951"
+    },
+    {
+      "path": "javascript/lang/security/detect-insecure-websocket.yaml",
+      "sha256": "65935c49d62e264a6b85a496455989137d7e82d4698855d511d173ed08ad3099"
+    },
+    {
+      "path": "javascript/lang/security/detect-no-csrf-before-method-override.yaml",
+      "sha256": "d361537a89c773a4940f107a2e787c6309d121e965a88f471b55d0db15ccb859"
+    },
+    {
+      "path": "javascript/lang/security/detect-pseudoRandomBytes.yaml",
+      "sha256": "d3c2b2168e6b1efdfc305a783387634e3ead8e0db6d4bdd3417381e177da4058"
+    },
+    {
+      "path": "javascript/lang/security/html-in-template-string.yaml",
+      "sha256": "1c32479fb6228a0a3a3618e6308b5bdfec14f05f7cf12a2321519b4095cf117d"
+    },
+    {
+      "path": "javascript/lang/security/insecure-object-assign.yaml",
+      "sha256": "bc5a5fdef1a8a4889f1d3efebdd3cb1f1e58f5261418928ae6c765eb7f1b2397"
+    },
+    {
+      "path": "javascript/lang/security/spawn-git-clone.yaml",
+      "sha256": "d87fdf812e1a61f137bde701d75415525ea66c45c593374a6f9ec2081609539f"
+    },
+    {
+      "path": "typescript/react/security/audit/react-dangerouslysetinnerhtml.yaml",
+      "sha256": "794094512be7f7dcaa49a4b1edf621dbdf1f984b4f29ab09a23538c0e59c2136"
+    },
+    {
+      "path": "typescript/react/security/audit/react-href-var.yaml",
+      "sha256": "aa8ade23b4a351f93be2bcd47ecc694b6b3d2a861a65fc8d345a6cb87f9253f2"
+    },
+    {
+      "path": "typescript/react/security/audit/react-jwt-decoded-property.yaml",
+      "sha256": "5e4ca6b6fa672c29cfbf78993f8b3b5724d77fd99da251de7b108835705fec15"
+    },
+    {
+      "path": "typescript/react/security/audit/react-jwt-in-localstorage.yaml",
+      "sha256": "8850734261ecbb6eee29707a683acc5d177b2d785cec00ef4788eb6193b5ba05"
+    },
+    {
+      "path": "typescript/react/security/audit/react-unsanitized-method.yaml",
+      "sha256": "c774bae09d1b0d8c4c12c32436f4dad6d93a590f9cfbd159bc2ab2416054d273"
+    },
+    {
+      "path": "typescript/react/security/audit/react-unsanitized-property.yaml",
+      "sha256": "0dc00b10abae599731f0c4f56c9efc64cf2469dfa4cc0d562ca6a3a0581be59d"
+    },
+    {
+      "path": "typescript/react/security/react-insecure-request.yaml",
+      "sha256": "4869905cc60559b8ca0ed0ac62c5abe9a26b2ee0e3bbdc0d1baf47271ee70376"
+    },
+    {
+      "path": "typescript/react/security/react-markdown-insecure-html.yaml",
+      "sha256": "e464c0f72c8a89ae325524b738c7c2024be1258e7a060a6365b487a0aa284434"
+    }
+  ],
+  "archive_sha256": "e5a7ec33035fc7707b87385cb99e1228c76b1604efe5439e92891f3005714cc3"
+}

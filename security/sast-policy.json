@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "blocking_severities": ["ERROR", "WARNING"],
+  "blocking_confidences": ["HIGH", "MEDIUM"],
+  "unknown_metadata": "block",
+  "other_findings": "review",
+  "exceptions": []
+}

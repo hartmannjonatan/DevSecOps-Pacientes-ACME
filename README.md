@@ -54,7 +54,7 @@ Contrato: [docs/openapi.json](docs/openapi.json). Cadastro/edição/pesquisa rec
 
 `seed` grava `artifacts/dast-fixtures.json` e `artifacts/openapi-seeded.json`, com IDs distintos para consulta, edição e exclusão. O futuro ZAP poderá acessar `http://app:8080` pela rede `acme-test_default`. Recrie fixtures entre análises destrutivas; importar OpenAPI não garante cobertura de sequências com estado.
 
-CI: Secret Detection nos arquivos/histórico e SCA dos lockfiles PHP/JS, com [política de bloqueio](security/POLICY.md), relatórios e testes de falha. Execute `scripts/security/scan`, `scripts/security/sca` e `python3 -m unittest discover -s tests/security -v` (Docker, Git e Python 3.9+). Guias: [Secret Detection](docs/secret-detection.md) e [SCA, achados e revalidação](docs/sca.md). A exceção histórica de segredo vence em **26/11/2026** e exige revisão. SAST PHP/JSX, IaC/Dockerfile e DAST ainda serão implementados.
+CI: Secret Detection nos arquivos/histórico, SCA dos lockfiles PHP/JS e SAST do código PHP/JSX, com [política de bloqueio](security/POLICY.md), relatórios e testes de falha. Execute `scripts/security/scan`, `scripts/security/sca`, `scripts/security/sast` e `python3 -m unittest discover -s tests/security -v` (Docker, Git e Python 3.9+). Guias: [Secret Detection](docs/secret-detection.md), [SCA, achados e revalidação](docs/sca.md) e [SAST, cobertura e demonstrações](docs/sast.md). A exceção histórica de segredo vence em **26/11/2026** e exige revisão. IaC/Dockerfile e DAST ainda serão implementados.
 
 Não há autenticação/autorização nem validação dos dígitos verificadores de CPF; use somente dados fictícios e mantenha o bind em loopback. Os testes funcionais e a análise de segredos não certificam segurança.
 
