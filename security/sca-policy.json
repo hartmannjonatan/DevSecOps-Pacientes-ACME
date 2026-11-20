@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "blocking_threshold": {
+    "runtime": "moderate",
+    "development": "high"
+  },
+  "unknown_severity": "block",
+  "abandoned_packages": "review",
+  "exceptions": []
+}

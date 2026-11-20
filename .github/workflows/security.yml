@@ -13,6 +13,7 @@ on:
           - normal
           - secret-fixture
           - operational-failure
+          - sca-operational-failure
 
 permissions:
   contents: read
@@ -32,7 +33,7 @@ jobs:
       - name: Scan files and history and apply policy
         run: scripts/security/scan
       - name: Controlled failure demonstration
-        if: ${{ !cancelled() && steps.checkout.outcome == 'success' && github.event_name == 'workflow_dispatch' && inputs.scenario != 'normal' }}
+        if: ${{ !cancelled() && steps.checkout.outcome == 'success' && github.event_name == 'workflow_dispatch' && (inputs.scenario == 'secret-fixture' || inputs.scenario == 'operational-failure') }}
         env:
           SCENARIO: ${{ inputs.scenario }}
         run: python3 scripts/security/demo.py "$SCENARIO"
@@ -44,6 +45,36 @@ jobs:
           path: |
             artifacts/security/secrets/result.json
             artifacts/security/demo/result.json
+          if-no-files-found: error
+          retention-days: 14
+
+  sca:
+    name: SCA (${{ matrix.ecosystem }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        ecosystem: [composer, npm]
+    steps:
+      - name: Checkout dependencies
+        id: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Validate lockfile, audit dependencies and apply contextual policy
+        run: scripts/security/sca --ecosystem '${{ matrix.ecosystem }}'
+      - name: Demonstrate unavailable npm advisory service
+        if: ${{ !cancelled() && steps.checkout.outcome == 'success' && matrix.ecosystem == 'npm' && github.event_name == 'workflow_dispatch' && inputs.scenario == 'sca-operational-failure' }}
+        run: scripts/security/sca --ecosystem npm --offline-demo --output artifacts/security/sca-demo
+      - name: Preserve SCA evidence
+        if: ${{ !cancelled() && steps.checkout.outcome == 'success' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: sca-${{ matrix.ecosystem }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            artifacts/security/sca/${{ matrix.ecosystem }}/
+            artifacts/security/sca-demo/
           if-no-files-found: error
           retention-days: 14
 
@@ -69,7 +100,7 @@ jobs:
   security-gate:
     name: Security gate
     if: ${{ always() }}
-    needs: [secret-detection, policy-tests]
+    needs: [secret-detection, sca, policy-tests]
     runs-on: ubuntu-24.04
     timeout-minutes: 2
     steps:
@@ -77,7 +108,9 @@ jobs:
         env:
           SECRET_DETECTION_RESULT: ${{ needs.secret-detection.result }}
           POLICY_TESTS_RESULT: ${{ needs.policy-tests.result }}
+          SCA_RESULT: ${{ needs.sca.result }}
         run: |
-          printf 'Secret Detection: %s\nPolicy tests: %s\n' "$SECRET_DETECTION_RESULT" "$POLICY_TESTS_RESULT"
+          printf 'Secret Detection: %s\nSCA: %s\nPolicy tests: %s\n' "$SECRET_DETECTION_RESULT" "$SCA_RESULT" "$POLICY_TESTS_RESULT"
           test "$SECRET_DETECTION_RESULT" = success
+          test "$SCA_RESULT" = success
           test "$POLICY_TESTS_RESULT" = success

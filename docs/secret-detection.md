@@ -45,7 +45,7 @@ Também testa: segredo removido do arquivo mas presente no histórico; exceção
 
 O APP_SECRET histórico foi detectado antes de cadastrar a exceção. Seu uso acadêmico foi confirmado pelo responsável e o tratamento está descrito integralmente na política. A exceção **vence em 26/11/2026**: após essa data, a aprovação é interrompida até revisão. A correção da aplicação atual e a aceitação do histórico são decisões distintas; essa exceção não é apresentada como eliminação da exposição histórica.
 
-Esta etapa não implementa SCA, SAST, IaC ou DAST. A próxima integração será SCA. O relatório acadêmico deve distinguir os testes sintéticos, o achado histórico real e as execuções efetivamente observadas no GitHub. Implementação e testes desta etapa receberam apoio do OpenAI Codex; as fontes oficiais abaixo orientaram as escolhas.
+SCA foi acrescentado na [etapa 2](sca.md); a aprovação final agora exige também os dois ecossistemas dessa análise. SAST, IaC e DAST ainda não estão implementados. O relatório acadêmico deve distinguir os testes sintéticos, o achado histórico real e as execuções efetivamente observadas no GitHub. Implementação e testes desta etapa receberam apoio do OpenAI Codex; as fontes oficiais abaixo orientaram as escolhas.
 
 ## Fontes
 

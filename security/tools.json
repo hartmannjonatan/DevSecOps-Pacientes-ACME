@@ -1,4 +1,9 @@
 {
   "gitleaks_version": "8.30.1",
-  "gitleaks_image": "ghcr.io/gitleaks/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f"
+  "gitleaks_image": "ghcr.io/gitleaks/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f",
+  "composer_version": "2.11.2",
+  "composer_image": "composer:2@sha256:0c8e663f14c94d07b3c45b175c51f5a14718508f21fe4dd7e54f09488dd0ed71",
+  "node_version": "24.22.3",
+  "npm_version": "11.19.1",
+  "node_image": "node:24-bookworm-slim@sha256:dc26ae92c9fb15cf6b1d63e20f0944b2efe0f115b20e00be48fb23fceb061c54"
 }
