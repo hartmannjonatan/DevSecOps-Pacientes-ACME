@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import { Link, useParams } from 'react-router-dom'
 import Layout from '../components/Layout';
-import Swal from 'sweetalert2';
+import Swal from 'sweetalert2/dist/sweetalert2.js';
 import axios from 'axios';
 
 function PacienteEdit(){ //esse componente é responsável por retornar o formulário de atualização dos registros de um paciente

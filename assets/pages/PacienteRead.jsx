@@ -1,7 +1,7 @@
 import React, {useState, useEffect, Component} from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
-import Swal from 'sweetalert2';
+import Swal from 'sweetalert2/dist/sweetalert2.js';
 import axios from 'axios';
 
 function PacienteRead(){ //esse componente é responsável pela página inicial, onde todos os pacientes são exibidos

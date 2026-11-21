@@ -27,7 +27,7 @@ COPY --from=assets /app/public/build ./public/build
 COPY docker/php.ini /usr/local/etc/php/conf.d/acme.ini
 COPY docker/apache.conf /etc/apache2/sites-available/000-default.conf
 COPY docker/entrypoint.sh /usr/local/bin/acme-entrypoint
-RUN a2enmod rewrite && sed -i 's/Listen 80/Listen 8080/' /etc/apache2/ports.conf \
+RUN a2enmod rewrite headers && sed -i 's/Listen 80/Listen 8080/' /etc/apache2/ports.conf \
     && echo 'ServerName localhost' >> /etc/apache2/apache2.conf \
     && cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
     && mkdir -p var/cache var/log /var/run/apache2 /var/lock/apache2 \

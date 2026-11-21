@@ -42,6 +42,23 @@ Em 21/11/2026, antes da correção dos cabeçalhos, a análise válida da aplica
 
 Política SHA256 `7a1d4b29f89692a3cef482b4e3c2fda414342d2292428be9c822be28af73f171`; executor ZAP SHA256 `a06263d7126709f9f722d7e04207b9cecab32d8d5975d31c543ee508376cf1fb`. A configuração sem cabeçalhos fica conservada na fixture para repetir o bloqueio sem enfraquecer a aplicação atual.
 
+Após a correção, a mesma análise (`artifacts/security/dast-after`) retornou **0 / pass**, com 9 operações e 590 mensagens ativas, **zero bloqueantes e uma instância informativa 10109 (Modern Web Application)**. Esse alerta descreve corretamente a SPA e permanece como `review`; não é vulnerabilidade comprovada nem falso positivo. Os avisos de versão do servidor e nosniff também desapareceram. Não houve relaxamento de política/regras.
+
+Correção: `mod_headers` habilitado, CSP restrita à própria origem (sem `unsafe-inline`/`unsafe-eval`), `frame-ancestors 'none'`, X-Frame-Options DENY, nosniff, Referrer-Policy e redução do banner Apache. Os imports SweetAlert2 passaram a usar JavaScript sem injeção de CSS; o CSS agora integra o bundle compilado. No navegador integrado, em ambiente novo na porta 8082, foram verificados navegação, cadastro, edição, pesquisa, confirmação/exclusão e diálogos estilizados; nenhum erro de CSP apareceu no console. Testes HTTP e persistência após parar/iniciar app e banco também passaram nessa imagem. O ambiente de UI foi descartado ao final; os projetos local/teste anteriores foram preservados.
+
+| Evidência local em 21/11/2026 | Resultado |
+|---|---|
+| Aplicação anterior (`dast-before`) | 1, análise válida, 2 bloqueantes |
+| Aplicação corrigida (`dast-after`) | 0, análise válida, 0 bloqueantes |
+| `dast-fixture-validated` | 1, análise válida, mesmos 2 bloqueantes |
+| `dast-corrected-validated` | 0, análise válida, 0 bloqueantes |
+| `dast-operational-validated` | 2, análise inválida: resposta 502 pelo ZAP ao alvo parado |
+| Limpeza dos cinco ambientes acima | Sucesso em todos |
+| Suíte de políticas | 38 testes aprovados (6 DAST); actionlint aprovado |
+| Revalidação final das demais categorias | Secret Detection, SCA Composer/npm, SAST e IaC aprovaram |
+
+As cinco execuções têm os mesmos hashes de política/executor e digest ZAP. O commit de integração **`12d8bb4`**, enviado antes da correção, preserva a configuração real bloqueante; o commit seguinte corrige a aplicação. Resultados do Actions dessas versões ainda dependem da confirmação do responsável; não foram observados pelo Codex.
+
 ## Evidências e limites
 
 Artifact `dast-<run_id>-<attempt>`: `result.json`, `alerts.json` nativo, `zap-report.html`, `coverage.json`, `preflight-http.json`, `addons.json`, contrato e fixtures usados, logs de build/startup/teste/scanner/serviços/limpeza. Retenção de 14 dias. Guardar antes do vencimento os relatórios selecionados e URLs/IDs de execuções para o relatório acadêmico; contagens de instâncias não são quantidades de vulnerabilidades distintas.
