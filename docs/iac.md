@@ -83,7 +83,7 @@ Validação local: scanner real no Dockerfile atual; demonstrações antes/depoi
 
 Também foi inspecionada a execução existente: app local e de teste com `Config.User=www-data`, healthcheck `php docker/healthcheck.php`, estado saudável e UID/GID efetivo 33 no container de teste. Esses dados complementam a análise estática de infraestrutura, mas não significam que o job IaC constrói ou executa containers da aplicação. Os comandos de build/testes funcionais já existentes continuam em `scripts/test-env`; as cópias vulneráveis nunca são usadas por eles. Nenhum banco/volume foi removido ou modificado nesta etapa.
 
-O responsável acompanha o repositório privado no próprio navegador. Resultados do Actions desta etapa permanecem esperados até sua confirmação; as evidências locais não substituem a comprovação do gate remoto.
+Em 21/11/2026, Jonatan confirmou no próprio navegador que `normal` aprovou e `iac-fixture`/`iac-operational-failure` reprovaram como esperado. A execução remota de `iac-corrected` não foi confirmada separadamente; seu resultado local está registrado acima.
 
 ## Fontes e autoria
 
@@ -92,4 +92,4 @@ O responsável acompanha o repositório privado no próprio navegador. Resultado
 - [CLI e funcionamento de skip-download](https://www.checkov.io/2.Basics/CLI%20Command%20Reference.html).
 - [Código do Checkov](https://github.com/bridgecrewio/checkov); a imagem fixada conserva exatamente a implementação usada, mesmo que a documentação evolua.
 
-Integração, regras locais, análise e testes desenvolvidos com apoio do OpenAI Codex. Regras nativas são do Checkov; decisões contextuais e complementos locais pertencem a esta adaptação acadêmica. DAST é a próxima categoria pendente.
+Integração, regras locais, análise e testes desenvolvidos com apoio do OpenAI Codex. Regras nativas são do Checkov; decisões contextuais e complementos locais pertencem a esta adaptação acadêmica. A etapa seguinte está documentada em [DAST](dast.md).

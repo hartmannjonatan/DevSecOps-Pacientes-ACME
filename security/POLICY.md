@@ -1,6 +1,6 @@
-# Política de segurança — versão 4
+# Política de segurança — versão 5
 
-Escopo: demonstração acadêmica Pacientes ACME, com dados fictícios, executada localmente e no CI. Objetivo: decidir a aprovação com evidências válidas, mantendo resultados de segurança separados de erros de execução. Esta versão aplica **Secret Detection, SCA, SAST e IaC**; DAST ainda não está implementado e não é declarado aprovado.
+Escopo: demonstração acadêmica Pacientes ACME, com dados fictícios, executada localmente e no CI. Objetivo: decidir a aprovação com evidências válidas, mantendo resultados de segurança separados de erros de execução. Esta versão aplica **Secret Detection, SCA, SAST, IaC e DAST**.
 
 ## Decisão de Secret Detection e composição do gate
 
@@ -13,7 +13,7 @@ Escopo: demonstração acadêmica Pacientes ACME, com dados fictícios, executad
 
 Gitleaks não oferece uma classificação uniforme de severidade para todos os segredos. Uma credencial detectada e ainda não avaliada é potencialmente utilizável: **todo achado não excepcionado bloqueia**, inclusive no histórico. O tratamento depende do contexto; não se presume que um token seja inofensivo porque está antigo ou não aparece mais no arquivo atual.
 
-`Security gate` exige sucesso dos jobs `Secret Detection`, **ambas as entradas da matriz SCA (Composer/npm)**, `SAST (PHP and React)`, `IaC (Dockerfile)` e `Security policy tests`, executa mesmo se outro job falhar e reprova também para `failure`, `cancelled` ou `skipped`. A matriz não cancela o outro ecossistema quando um falha. Não há `continue-on-error`, baseline automática, `|| true` para aprovar o scanner nem exceção de falha operacional. A coleta de artefatos pode ocorrer depois da falha e não transforma o job em sucesso. Falha de upload também impede aprovação.
+`Security gate` exige sucesso dos jobs `Secret Detection`, **ambas as entradas da matriz SCA (Composer/npm)**, `SAST (PHP and React)`, `IaC (Dockerfile)`, `DAST (ZAP and disposable app)` e `Security policy tests`, executa mesmo se outro job falhar e reprova também para `failure`, `cancelled` ou `skipped`. A matriz não cancela o outro ecossistema quando um falha. Não há `continue-on-error`, baseline automática, `|| true` para aprovar o scanner nem exceção de falha operacional. A coleta de artefatos pode ocorrer depois da falha e não transforma o job em sucesso. Falha de upload também impede aprovação.
 
 ## Exceções de Secret Detection
 
@@ -81,12 +81,20 @@ O uso de root durante instalações e configuração no build não equivale à e
 
 Saídas do integrador: 0 = válido sem bloqueantes, 1 = violação, 2 = falha operacional. Registros de aprovação/falha podem se repetir por instrução: quantidade de avaliações não é quantidade de regras distintas. Não há exceção IaC, `soft-fail`, baseline ou supressão local permitida. Adicionar uma exceção requer implementar escopo/revisão/testes; o registro atual deve permanecer vazio.
 
-## Evolução para as outras categorias
+## Política DAST
 
-As decisões abaixo orientam as próximas etapas; seus controles ainda serão implementados e demonstrados:
+Configuração executável: `security/dast-policy.json`. ZAP 2.17.0 e seus add-ons são conservados na imagem fixada por digest. Cada execução constrói o Dockerfile real e cria um projeto `acme-dast-<identificador>` com banco novo, credenciais públicas de teste, rede interna sem saída para a Internet e nenhuma porta publicada. O alvo é exclusivamente `http://app:8080`; não é possível informar uma URL externa ao script. A API de controle do ZAP escuta somente o loopback do próprio container.
 
-- DAST: exigir prontidão, alcance real dos endpoints e resultado válido. Definir regras bloqueantes a partir de risco/confiança e contexto; respostas 404/500 ou scanner iniciado não comprovam cobertura.
-- Para todas: erro operacional bloqueia por padrão, exceções são específicas e revisáveis, e nenhum scanner pode ser omitido para aprovar o trabalho completo.
+| Condição | Decisão |
+|---|---|
+| Risco Medium/High (2/3), confiança Medium/High/Confirmed (2/3/4) | Bloqueia: injeções e proteções HTTP ausentes são relevantes à API/interface, mesmo com dados fictícios. |
+| Risco Low/Informational, ou confiança Low | `review`, permanece no relatório e exige análise contextual; não equivale a falso positivo. |
+| Classificação desconhecida, supressão, relatório inválido, importação OpenAPI com erros, alvo inacessível, cobertura insuficiente, timeout ou análise incompleta | `operational_error`, bloqueia. |
+| Falha de construção, prontidão, teste HTTP ou limpeza do ambiente | `operational_error`, bloqueia. |
+
+A varredura passiva usa as regras habilitadas da imagem. A ativa seleciona explicitamente regras release de **XSS refletido (40012), SQL injection (40018) e CRLF injection (40003)**, com limiar Medium e força Low para um CI pequeno. Não se declara cobertura de todas as regras do ZAP, nem de XSS no DOM, fluxos autenticados, TLS, navegador real ou todas as combinações de estado. Os nove métodos/endpoints OpenAPI devem responder com sucesso num fluxo funcional enviado pelo proxy; formulário de cadastro/edição/pesquisa também precisa ter mensagens de ataque registradas pelo scanner. Fila passiva zerada e scan ativo concluído são obrigatórios. DELETE pode tornar seu ID indisponível nos ataques seguintes; a cobertura funcional bem-sucedida é registrada antes disso e não é confundida com explorabilidade.
+
+Não há exceções DAST nem remoção de alertas. Não autenticar usuários é uma limitação conhecida da aplicação acadêmica; o pipeline não torna esse modelo aceitável para dados reais. HTTP sem TLS só se justifica pelo isolamento e pelo uso local. Ao publicar a aplicação, revisar política, autenticação, autorização e transporte. Saídas: 0 = válido sem bloqueantes; 1 = violação; 2 = falha operacional.
 
 ## Evidências e avaliação
 
@@ -101,3 +109,5 @@ Pipeline reprovado e impedimento de merge são controles diferentes. Para impedi
 Em SAST, os cenários isolados `sast-fixture` e `sast-corrected` preservam regras/política e registram fontes/diff. O primeiro deve reprovar o gate por SQL injection e XSS; o segundo deve aprovar. `sast-operational-failure` introduz PHP inválido somente no alvo temporário e deve reprovar como análise incompleta. A aplicação real é analisada em todos os cenários.
 
 Em IaC, comparar `iac-fixture` e `iac-corrected`: são cópias isoladas do Dockerfile, com root/healthcheck desativado e posterior restauração. Nunca são construídas/executadas. A análise real permanece obrigatória em todos os cenários. `iac-operational-failure` usa alvo inválido e deve reprovar como análise inválida. Guardar hashes de política, regras locais, imagem e entradas.
+
+Em DAST, `dast-fixture` monta somente no ambiente novo a configuração Apache anterior, sem os cabeçalhos de proteção; `dast-corrected` usa a configuração atual. Ambos usam a mesma imagem ZAP, regras e política. `dast-operational-failure` para apenas sua aplicação descartável após prontidão/testes e exige que a tentativa real pelo ZAP falhe. Os cenários adicionais não substituem a análise normal obrigatória. Relatórios mantêm dados/ataques fictícios e logs; revisar antes da entrega.

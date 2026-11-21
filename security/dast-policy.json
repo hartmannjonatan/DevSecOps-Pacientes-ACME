@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "minimum_blocking_risk": 2,
+  "minimum_blocking_confidence": 2,
+  "active_rule_ids": [40012, 40018, 40003],
+  "attack_strength": "LOW",
+  "alert_threshold": "MEDIUM",
+  "exceptions": [],
+  "context": "Local fictional-data demo: medium/high risk with medium/high/confirmed confidence blocks. Low/informational or low-confidence alerts remain for documented review. No authentication or Internet exposure is assumed."
+}

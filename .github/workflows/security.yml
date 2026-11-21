@@ -20,6 +20,9 @@ on:
           - iac-fixture
           - iac-corrected
           - iac-operational-failure
+          - dast-fixture
+          - dast-corrected
+          - dast-operational-failure
 
 permissions:
   contents: read
@@ -140,6 +143,32 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  dast:
+    name: DAST (ZAP and disposable app)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - name: Checkout application and DAST policy
+        id: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build, exercise HTTP flows, scan with ZAP and clean disposable environment
+        run: scripts/security/dast --output artifacts/security/dast/normal
+      - name: Demonstrate DAST detection, correction or unavailable target
+        if: ${{ !cancelled() && steps.checkout.outcome == 'success' && github.event_name == 'workflow_dispatch' && (inputs.scenario == 'dast-fixture' || inputs.scenario == 'dast-corrected' || inputs.scenario == 'dast-operational-failure') }}
+        env:
+          SCENARIO: ${{ inputs.scenario }}
+        run: scripts/security/dast --scenario "$SCENARIO" --output artifacts/security/dast/demo
+      - name: Preserve DAST reports, coverage and service logs
+        if: ${{ !cancelled() && steps.checkout.outcome == 'success' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: dast-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/security/dast/
+          if-no-files-found: error
+          retention-days: 14
+
   policy-tests:
     name: Security policy tests
     runs-on: ubuntu-24.04
@@ -162,7 +191,7 @@ jobs:
   security-gate:
     name: Security gate
     if: ${{ always() }}
-    needs: [secret-detection, sca, sast, iac, policy-tests]
+    needs: [secret-detection, sca, sast, iac, dast, policy-tests]
     runs-on: ubuntu-24.04
     timeout-minutes: 2
     steps:
@@ -173,10 +202,12 @@ jobs:
           SCA_RESULT: ${{ needs.sca.result }}
           SAST_RESULT: ${{ needs.sast.result }}
           IAC_RESULT: ${{ needs.iac.result }}
+          DAST_RESULT: ${{ needs.dast.result }}
         run: |
-          printf 'Secret Detection: %s\nSCA: %s\nSAST: %s\nIaC: %s\nPolicy tests: %s\n' "$SECRET_DETECTION_RESULT" "$SCA_RESULT" "$SAST_RESULT" "$IAC_RESULT" "$POLICY_TESTS_RESULT"
+          printf 'Secret Detection: %s\nSCA: %s\nSAST: %s\nIaC: %s\nDAST: %s\nPolicy tests: %s\n' "$SECRET_DETECTION_RESULT" "$SCA_RESULT" "$SAST_RESULT" "$IAC_RESULT" "$DAST_RESULT" "$POLICY_TESTS_RESULT"
           test "$SECRET_DETECTION_RESULT" = success
           test "$SCA_RESULT" = success
           test "$SAST_RESULT" = success
           test "$IAC_RESULT" = success
+          test "$DAST_RESULT" = success
           test "$POLICY_TESTS_RESULT" = success

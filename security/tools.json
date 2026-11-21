@@ -9,5 +9,7 @@
   "semgrep_version": "1.186.0",
   "semgrep_image": "semgrep/semgrep@sha256:6e1b04340e60e910fbb4ddbf3c857ab0918f064417ad5ac530014ccb3cf8c8f1",
   "checkov_version": "3.4.6",
-  "checkov_image": "bridgecrew/checkov@sha256:b4b7e9d419ddb9ae7a257678ee39cb5d9e5569f604723297dd9cec7fd4571bff"
+  "checkov_image": "bridgecrew/checkov@sha256:b4b7e9d419ddb9ae7a257678ee39cb5d9e5569f604723297dd9cec7fd4571bff",
+  "zap_version": "2.17.0",
+  "zap_image": "ghcr.io/zaproxy/zaproxy@sha256:9624669db72f54d86c4b46a7064518bd9bf79d8c61a4c31befa9923489f328af"
 }

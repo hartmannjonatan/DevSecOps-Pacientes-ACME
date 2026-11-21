@@ -1,0 +1,7 @@
+# Dedicated random acme-dast-* project. Never attach to local/test databases.
+services:
+  app:
+    ports: !reset []
+networks:
+  default:
+    internal: true
